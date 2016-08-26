@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import fnmatch
 import os
+import platform
 import re
 import sys
 
@@ -26,12 +27,19 @@ from setuptools import find_packages, setup, Command, Extension
 from setuptools.command.install import install as InstallCommandBase
 from setuptools.dist import Distribution
 
-_VERSION = '0.6.0'
+_VERSION = '0.10.0rc0'
+
+numpy_version = "1.8.2"
+if platform.system() == "Darwin":
+  # There are bugs with numpy pip installation on OS X prior to
+  # 1.10.1, so on mac we require a higher version than on other
+  # platforms.
+  numpy_version = "1.10.1"
 
 REQUIRED_PACKAGES = [
-    'numpy >= 1.8.2',
+    'numpy >= %s' % numpy_version,
     'six >= 1.10.0',
-    'protobuf == 3.0.0a3',
+    'protobuf == 3.0.0b2',
 ]
 
 # python3 requires wheel 0.26
@@ -39,7 +47,8 @@ if sys.version_info.major == 3:
   REQUIRED_PACKAGES.append('wheel >= 0.26')
 else:
   REQUIRED_PACKAGES.append('wheel')
-
+  # mock comes with unittest.mock for python3, need to install for python2
+  REQUIRED_PACKAGES.append('mock >= 2.0.0')
 
 # pylint: disable=line-too-long
 CONSOLE_SCRIPTS = [
@@ -99,6 +108,17 @@ class InstallHeaders(Command):
     # directories for -I
     install_dir = re.sub('/google/protobuf/src', '', install_dir)
 
+    # Copy eigen code into tensorflow/include.
+    # A symlink would do, but the wheel file that gets created ignores
+    # symlink within the directory hierarchy.
+    # NOTE(keveman): Figure out how to customize bdist_wheel package so
+    # we can do the symlink.
+    if 'external/eigen_archive/' in install_dir:
+      extra_dir = install_dir.replace('external/eigen_archive', '')
+      if not os.path.exists(extra_dir):
+        self.mkpath(extra_dir)
+      self.copy_file(header, extra_dir)
+
     if not os.path.exists(install_dir):
       self.mkpath(install_dir)
     return self.copy_file(header, install_dir)
@@ -141,7 +161,7 @@ setup(
     version=_VERSION,
     description='TensorFlow helps the tensors flow',
     long_description='',
-    url='http://tensorflow.com/',
+    url='http://tensorflow.org/',
     author='Google Inc.',
     author_email='opensource@google.com',
     # Contained modules and scripts.
@@ -156,10 +176,10 @@ setup(
     include_package_data=True,
     package_data={
         'tensorflow': ['python/_pywrap_tensorflow.so',
-                       'core/libtensorflow_framework.so',
                        'tensorboard/dist/index.html',
                        'tensorboard/dist/tf-tensorboard.html',
                        'tensorboard/lib/css/global.css',
+                       'tensorboard/TAG',
                      ] + matches,
     },
     zip_safe=False,

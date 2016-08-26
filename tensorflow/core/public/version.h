@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ limitations under the License.
 // TensorFlow uses semantic versioning, see http://semver.org/.
 
 #define TF_MAJOR_VERSION 0
-#define TF_MINOR_VERSION 6
-#define TF_PATCH_VERSION 0
+#define TF_MINOR_VERSION 10
+#define TF_PATCH_VERSION 0rc0
 
 // TF_VERSION_SUFFIX is non-empty for pre-releases (e.g. "-alpha", "-alpha.1",
 // "-beta", "-rc", "-rc.1")
@@ -60,8 +60,28 @@ limitations under the License.
 //    111635679, 7jan2016).
 // 5. Graphs are wholly-validated during Session::Create() (7jan2016).
 // 6. TensorFlow is scalar strict within Google (27jan2016).
+// 7. Remove TopK in favor of TopKV2 (5feb2016).
+// 8. Replace RandomCrop from C++ with pure Python (5feb2016).
+// 9. Deprecate batch_norm_with_global_normalization (16feb2016).
+// 10. Deprecate conv3d_backprop_{filter,input} (10jun2016).
+// 11. Deprecate {batch}_self_adjoint_eig (3aug2016).
+// 12. Graph consumers understand the node_def field of FunctionDef (22aug2016).
 #define TF_GRAPH_DEF_VERSION_MIN_PRODUCER 0
 #define TF_GRAPH_DEF_VERSION_MIN_CONSUMER 0
-#define TF_GRAPH_DEF_VERSION 6
+#define TF_GRAPH_DEF_VERSION 12
+
+// Checkpoint compatibility versions (the versions field in SavedSliceMeta).
+//
+// The checkpoint versions have the same semantics as GraphDef versions, but the
+// numbering scheme is separate.  We have no plans to ever deprecate checkpoint
+// versions, but it's good to have this in place in case we ever need to.
+//
+// Version history:
+//
+// 0. Checkpoints saved before checkpoint versioning.
+// 1. First real version (10feb2015).
+#define TF_CHECKPOINT_VERSION_MIN_PRODUCER 0
+#define TF_CHECKPOINT_VERSION_MIN_CONSUMER 0
+#define TF_CHECKPOINT_VERSION 1
 
 #endif  // TENSORFLOW_CORE_PUBLIC_VERSION_H_
